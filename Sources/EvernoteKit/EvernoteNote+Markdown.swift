@@ -119,7 +119,7 @@ public extension EvernoteNote {
 
             return result
         case "p":
-            let content = element.children?.map { convertElementToMarkdown($0).replacingOccurrences(of: "\n", with: " ") }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
             return "\(content)\n\n"
         case "img":
@@ -139,12 +139,14 @@ public extension EvernoteNote {
             let href = element.attribute(forName: "href")?.stringValue ?? ""
             return "[\(content.isEmpty ? href : content)](\(href))"
         case "ul", "ol":
+            // we need newlines on both sides of the li contents, as lists can be nested and a nested list needs to start
+            // its content on the next line than the <li> it is contained within
             let items = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
-            return items
+            return "\n" + items + "\n"
         case "li":
             let indent = String(repeating: "    ", count: max(0, countListAncestors(element) - 1))
             // Don't trim whitespace for list content, but do trim newlines
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined().replacingOccurrences(of: "\n", with: " ") ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             if element.parent?.name?.lowercased() == "ol" {
                 return indent + "1. \(content)\n"
             } else {
@@ -212,6 +214,30 @@ public extension EvernoteNote {
         case "td":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "<td>" + content + "</td>"
+        case "en-media":
+            let hash = element.attribute(forName: "hash")?.stringValue ?? ""
+            let type = element.attribute(forName: "type")?.stringValue ?? ""
+            let alt = element.attribute(forName: "alt")?.stringValue ?? "attachment"
+
+            // Handle images specially
+            if type.starts(with: "image/") {
+                var attrs = [String]()
+                if let width = element.attribute(forName: "width")?.stringValue {
+                    attrs.append("width=\"\(width)\"")
+                }
+                if let height = element.attribute(forName: "height")?.stringValue {
+                    attrs.append("height=\"\(height)\"")
+                }
+
+                // If we have width/height, use HTML img tag to preserve dimensions
+                if !attrs.isEmpty {
+                    return "<img src=\"assets/\(hash)\" alt=\"\(alt)\" \(attrs.joined(separator: " "))>\n\n"
+                }
+                return "![\(alt)](assets/\(hash))\n\n"
+            }
+
+            // For other media types, use a link
+            return "[\(alt)](assets/\(hash))\n\n"
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }

@@ -90,7 +90,7 @@ public extension EvernoteNote {
         case "a":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let href = element.attribute(forName: "href")?.stringValue ?? ""
-            return "[\(content)](\(href))"
+            return "[\(content.isEmpty ? href : content)](\(href))"
         case "ul":
             let items = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "\n\(items)"
@@ -104,7 +104,10 @@ public extension EvernoteNote {
             } else {
                 return "* \(content)\n"
             }
-        case "code", "pre":
+        case "code":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "```\n\(content)\n```\n\n"
+        case "pre":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "`\(content)`"
         case "en-todo":

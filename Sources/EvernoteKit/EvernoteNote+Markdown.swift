@@ -163,6 +163,24 @@ public extension EvernoteNote {
             let parentName = element.parent?.name?.lowercased()
             let extraNewline = parentName != "p" && parentName != "blockquote" ? "\n" : ""
             return "\n" + lines.map { "> \($0)" }.joined(separator: "\n") + extraNewline
+        case "h1":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "# \(content)\n\n"
+        case "h2":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "## \(content)\n\n"
+        case "h3":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "### \(content)\n\n"
+        case "h4":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "#### \(content)\n\n"
+        case "h5":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "##### \(content)\n\n"
+        case "h6":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "###### \(content)\n\n"
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }

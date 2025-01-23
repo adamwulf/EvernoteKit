@@ -62,7 +62,17 @@ public extension EvernoteNote {
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
         case "div", "p":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmedContent.isEmpty,
+               let style = element.attribute(forName: "style")?.stringValue,
+               let imageUrl = extractBackgroundImageUrl(from: style) {
+                return "\n![background image](\(imageUrl))\n"
+            }
             return "\n\(content)\n"
+        case "img":
+            let src = element.attribute(forName: "src")?.stringValue ?? ""
+            let alt = element.attribute(forName: "alt")?.stringValue ?? ""
+            return "![" + alt + "](" + src + ")"
         case "br":
             return "\n"
         case "b", "strong":
@@ -97,5 +107,18 @@ public extension EvernoteNote {
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }
+    }
+
+    private func extractBackgroundImageUrl(from style: String) -> String? {
+        let pattern = #"background(?:-image)?\s*:\s*url\(['"]?(.*?)['"]?\)"#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+              let match = regex.firstMatch(in: style, range: NSRange(style.startIndex..., in: style)) else {
+            return nil
+        }
+
+        if let range = Range(match.range(at: 1), in: style) {
+            return String(style[range])
+        }
+        return nil
     }
 }

@@ -48,11 +48,26 @@ extension Ever {
 
             // Export notes
             let notesToExport = limit > 0 ? notes.prefix(limit) : notes[...]
+            var exportedCount = 0
+            var failedNotes: [(note: EvernoteNote, error: Error)] = []
+
             for note in notesToExport {
-                try note.exportToDirectory(baseNoteDir: outputPath)
+                do {
+                    try note.exportToDirectory(baseNoteDir: outputPath)
+                    exportedCount += 1
+                } catch {
+                    failedNotes.append((note: note, error: error))
+                    print("Warning: Failed to export note '\(note.id)': \(error)")
+                }
             }
 
-            print("Successfully exported \(notesToExport.count) notes to \(outputPath)")
+            print("Successfully exported \(exportedCount) notes to \(outputPath)")
+            if !failedNotes.isEmpty {
+                print("\nFailed to export \(failedNotes.count) notes:")
+                for (note, error) in failedNotes {
+                    print("- '\(note.id)': \(error)")
+                }
+            }
         }
     }
 }

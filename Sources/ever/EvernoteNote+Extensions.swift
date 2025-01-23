@@ -103,37 +103,49 @@ public extension EvernoteNote {
         let noteDir = (baseNoteDir as NSString).appendingPathComponent("\(id).localized")
         let assetsDir = (noteDir as NSString).appendingPathComponent("assets")
 
-        // Only create assets directory if we have resources with data
+        // Only create assets directory if we have resources
         let resourcesWithData = resources.filter { $0.data != nil }
         guard !resourcesWithData.isEmpty else {
             return
         }
 
         try FileManager.default.createDirectory(atPath: assetsDir, withIntermediateDirectories: true)
+        var failedResources: [(name: String, error: Error)] = []
 
         for (index, resource) in resources.enumerated() {
             guard let data = resource.data else {
                 continue
             }
 
-            // Generate filename based on resource attributes or fallback to index
-            let filename: String
-            if let originalName = resource.attributes?.fileName {
-                filename = originalName
-            } else {
-                let ext = mimeTypeToExtension(resource.mime)
-                filename = "attachment_\(index)\(ext)"
+            do {
+                // Generate filename based on resource attributes or fallback to index
+                let filename: String
+                if let originalName = resource.attributes?.fileName {
+                    filename = originalName
+                } else {
+                    let ext = mimeTypeToExtension(resource.mime)
+                    filename = "attachment_\(index)\(ext)"
+                }
+
+                let filePath = (assetsDir as NSString).appendingPathComponent(filename)
+                try data.write(to: URL(fileURLWithPath: filePath))
+
+                // Set file dates if available
+                if let timestamp = resource.attributes?.timestamp {
+                    try FileManager.default.setAttributes([
+                        .creationDate: timestamp,
+                        .modificationDate: timestamp
+                    ], ofItemAtPath: filePath)
+                }
+            } catch {
+                failedResources.append((name: resource.attributes?.fileName ?? "attachment_\(index)", error: error))
             }
+        }
 
-            let filePath = (assetsDir as NSString).appendingPathComponent(filename)
-            try data.write(to: URL(fileURLWithPath: filePath))
-
-            // Set file dates if available
-            if let timestamp = resource.attributes?.timestamp {
-                try FileManager.default.setAttributes([
-                    .creationDate: timestamp,
-                    .modificationDate: timestamp
-                ], ofItemAtPath: filePath)
+        if !failedResources.isEmpty {
+            print("Warning: Failed to export \(failedResources.count) resources in note '\(id)':")
+            for (name, error) in failedResources {
+                print("- '\(name)': \(error)")
             }
         }
     }

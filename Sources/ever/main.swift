@@ -21,7 +21,7 @@ extension Ever {
         var inputPath: String
 
         @Option(name: .shortAndLong, help: "Directory to export to")
-        var outputDir: String = "Evernote"
+        var outputDir: String
 
         @Option(name: .shortAndLong, help: "Maximum number of notes to export (0 for all)")
         var limit: Int = 0

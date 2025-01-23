@@ -3,68 +3,146 @@ import CryptoKit
 
 // MARK: - Types
 
-struct NoteAttributes: Codable {
-    var subjectDate: Date?
-    var latitude: Double?
-    var longitude: Double?
-    var altitude: Double?
-    var author: String?
-    var source: String?
-    var sourceUrl: String?
-    var sourceApplication: String?
-    var reminderOrder: Int?
-    var reminderTime: Date?
-    var reminderDoneTime: Date?
-    var placeName: String?
-    var contentClass: String?
-    var applicationData: [String: String] = [:]
+public struct NoteAttributes: Codable {
+    public var subjectDate: Date?
+    public var latitude: Double?
+    public var longitude: Double?
+    public var altitude: Double?
+    public var author: String?
+    public var source: String?
+    public var sourceUrl: String?
+    public var sourceApplication: String?
+    public var reminderOrder: Int?
+    public var reminderTime: Date?
+    public var reminderDoneTime: Date?
+    public var placeName: String?
+    public var contentClass: String?
+    public var applicationData: [String: String] = [:]
+
+    public init(
+        subjectDate: Date? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        altitude: Double? = nil,
+        author: String? = nil,
+        source: String? = nil,
+        sourceUrl: String? = nil,
+        sourceApplication: String? = nil,
+        reminderOrder: Int? = nil,
+        reminderTime: Date? = nil,
+        reminderDoneTime: Date? = nil,
+        placeName: String? = nil,
+        contentClass: String? = nil,
+        applicationData: [String: String] = [:]
+    ) {
+        self.subjectDate = subjectDate
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
+        self.author = author
+        self.source = source
+        self.sourceUrl = sourceUrl
+        self.sourceApplication = sourceApplication
+        self.reminderOrder = reminderOrder
+        self.reminderTime = reminderTime
+        self.reminderDoneTime = reminderDoneTime
+        self.placeName = placeName
+        self.contentClass = contentClass
+        self.applicationData = applicationData
+    }
 }
 
-struct ResourceAttributes: Codable {
-    var sourceUrl: String?
-    var timestamp: Date?
-    var latitude: Double?
-    var longitude: Double?
-    var altitude: Double?
-    var cameraMake: String?
-    var cameraModel: String?
-    var recoType: String?
-    var fileName: String?
-    var attachment: Bool?
-    var applicationData: [String: String] = [:]
+public struct ResourceAttributes: Codable {
+    public var sourceUrl: String?
+    public var timestamp: Date?
+    public var latitude: Double?
+    public var longitude: Double?
+    public var altitude: Double?
+    public var cameraMake: String?
+    public var cameraModel: String?
+    public var recoType: String?
+    public var fileName: String?
+    public var attachment: Bool?
+    public var applicationData: [String: String] = [:]
+
+    public init(
+        sourceUrl: String? = nil,
+        timestamp: Date? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
+        altitude: Double? = nil,
+        cameraMake: String? = nil,
+        cameraModel: String? = nil,
+        recoType: String? = nil,
+        fileName: String? = nil,
+        attachment: Bool? = nil,
+        applicationData: [String: String] = [:]
+    ) {
+        self.sourceUrl = sourceUrl
+        self.timestamp = timestamp
+        self.latitude = latitude
+        self.longitude = longitude
+        self.altitude = altitude
+        self.cameraMake = cameraMake
+        self.cameraModel = cameraModel
+        self.recoType = recoType
+        self.fileName = fileName
+        self.attachment = attachment
+        self.applicationData = applicationData
+    }
 }
 
-class EvernoteNote: Codable {
-    var id: String = ""
-    var title: String = ""
-    var content: String = ""
-    var created: Date?
-    var updated: Date?
-    var tags: [String] = []
-    var attributes: NoteAttributes?
-    var resources: [EvernoteResource] = []
+public class EvernoteNote: Codable {
+    public var id: String = ""
+    public var title: String = ""
+    public var content: String = ""
+    public var created: Date?
+    public var updated: Date?
+    public var tags: [String] = []
+    public var attributes: NoteAttributes?
+    public var resources: [EvernoteResource] = []
 
     enum CodingKeys: String, CodingKey {
         case id, title, content, created, updated, tags, attributes, resources
     }
 
-    init() {}
+    public init() {}
 }
 
-class EvernoteResource: Codable {
-    var data: Data?
-    var mime: String = ""
-    var width: Int?
-    var height: Int?
-    var duration: Int?
-    var recognition: String?
-    var attributes: ResourceAttributes?
-    var alternateData: Data?
+public struct EvernoteResource: Codable {
+    public var data: Data?
+    public var mime: String = ""
+    public var width: Int?
+    public var height: Int?
+    public var duration: Int?
+    public var recognition: String?
+    public var attributes: ResourceAttributes?
+    public var alternateData: Data?
+
+    public init(
+        data: Data? = nil,
+        mime: String = "",
+        width: Int? = nil,
+        height: Int? = nil,
+        duration: Int? = nil,
+        recognition: String? = nil,
+        attributes: ResourceAttributes? = nil,
+        alternateData: Data? = nil
+    ) {
+        self.data = data
+        self.mime = mime
+        self.width = width
+        self.height = height
+        self.duration = duration
+        self.recognition = recognition
+        self.attributes = attributes
+        self.alternateData = alternateData
+    }
 }
 
 // MARK: - Parsing Extensions
 
-extension EvernoteNote {
+public extension EvernoteNote {
     static func parse(from element: XMLElement) throws -> EvernoteNote {
         let note = EvernoteNote()
 
@@ -98,7 +176,7 @@ extension EvernoteNote {
     }
 }
 
-extension EvernoteResource {
+public extension EvernoteResource {
     static func parse(from element: XMLElement) throws -> EvernoteResource {
         let resource = EvernoteResource()
 
@@ -161,7 +239,7 @@ extension EvernoteResource {
     }
 }
 
-extension NoteAttributes {
+public extension NoteAttributes {
     static func parse(from element: XMLElement) -> NoteAttributes {
         var attrs = NoteAttributes()
 
@@ -190,7 +268,7 @@ extension NoteAttributes {
     }
 }
 
-extension ResourceAttributes {
+public extension ResourceAttributes {
     static func parse(from element: XMLElement) -> ResourceAttributes {
         var attrs = ResourceAttributes()
 
@@ -216,7 +294,7 @@ extension ResourceAttributes {
     }
 }
 
-extension DateFormatter {
+public extension DateFormatter {
     static let enex: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
@@ -227,7 +305,7 @@ extension DateFormatter {
 
 // MARK: - Export Extensions
 
-extension EvernoteNote {
+public extension EvernoteNote {
     func exportToDirectory(baseNoteDir: String) throws {
         try createDirectoryStructure(baseNoteDir: baseNoteDir)
         try exportLocalizedStrings(baseNoteDir: baseNoteDir)
@@ -391,8 +469,8 @@ extension EvernoteNote {
 
 // MARK: - Parser
 
-class EvernoteParser {
-    static func parse(xmlData: Data) throws -> [EvernoteNote] {
+public class EvernoteParser {
+    public static func parse(xmlData: Data) throws -> [EvernoteNote] {
         // Skip DTD validation
         let options: XMLNode.Options = [.nodePreserveWhitespace]
         let document = try XMLDocument(data: xmlData, options: options)

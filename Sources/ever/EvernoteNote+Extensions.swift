@@ -84,15 +84,6 @@ public extension EvernoteNote {
 
     private func exportMarkdown(baseNoteDir: String) throws {
         let noteDir = (baseNoteDir as NSString).appendingPathComponent("\(id).localized")
-        var markdown = "# \(title)\n\n"
-        if let created = created {
-            markdown += "Created: \(created)\n\n"
-        }
-        if !tags.isEmpty {
-            markdown += "Tags: \(tags.joined(separator: ", "))\n\n"
-        }
-        markdown += content
-
         try markdown.write(to: URL(fileURLWithPath: (noteDir as NSString).appendingPathComponent("content.md")),
                          atomically: true,
                          encoding: .utf8)

@@ -178,7 +178,7 @@ public extension EvernoteNote {
 
 public extension EvernoteResource {
     static func parse(from element: XMLElement) throws -> EvernoteResource {
-        let resource = EvernoteResource()
+        var resource = EvernoteResource()
 
         print("Parsing resource:")
         if let dataElement = element.elements(forName: "data").first {

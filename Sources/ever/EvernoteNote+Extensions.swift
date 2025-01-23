@@ -6,6 +6,7 @@
 //
 import EvernoteKit
 import Foundation
+import UniformTypeIdentifiers
 
 public extension EvernoteNote {
     func exportToDirectory(baseNoteDir: String) throws {
@@ -145,16 +146,8 @@ public extension EvernoteNote {
     }
 
     private func mimeTypeToExtension(_ mime: String) -> String {
-        switch mime.lowercased() {
-        case "image/jpeg", "image/jpg": return ".jpg"
-        case "image/png": return ".png"
-        case "image/gif": return ".gif"
-        case "application/pdf": return ".pdf"
-        case "audio/wav": return ".wav"
-        case "audio/mpeg": return ".mp3"
-        case "application/vnd.evernote.ink": return ".ink"
-        default: return ""
-        }
+        guard let utType = UTType(mimeType: mime) else { return "" }
+        return utType.preferredFilenameExtension ?? "dat"
     }
 
     private func setDirectoryDates(baseNoteDir: String) throws {

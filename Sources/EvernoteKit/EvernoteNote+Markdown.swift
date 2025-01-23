@@ -106,17 +106,32 @@ public extension EvernoteNote {
             }
         case "code":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let parentName = element.parent?.name?.lowercased()
+            if parentName == "p" {
+                return "`\(content)`"
+            }
             return "```\n\(content)\n```\n\n"
         case "pre":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return "`\(content)`"
+            let hasCodeParent = element.parent?.name?.lowercased() == "code"
+            if hasCodeParent {
+                return content
+            }
+            let hasCodeChild = element.children?.contains(where: { ($0 as? XMLElement)?.name?.lowercased() == "code" }) ?? false
+            if hasCodeChild {
+                return content
+            } else {
+                return "`\(content)`"
+            }
         case "en-todo":
             let checked = element.attribute(forName: "checked")?.stringValue == "true"
             return checked ? "[x] " : "[ ] "
         case "blockquote":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let lines = content.components(separatedBy: "\n")
-            return "\n" + lines.map { "> \($0)" }.joined(separator: "\n") + "\n\n"
+            let parentName = element.parent?.name?.lowercased()
+            let extraNewline = parentName != "p" && parentName != "blockquote" ? "\n" : ""
+            return "\n" + lines.map { "> \($0)" }.joined(separator: "\n") + extraNewline
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }

@@ -43,12 +43,13 @@ public extension EvernoteNote {
     }
 
     private func parseContent() throws -> XMLDocument {
-        // Wrap the content in an en-note element if not already wrapped
         let xmlString = content.trimmingCharacters(in: .whitespacesAndNewlines)
-        let wrappedContent = xmlString.starts(with: "<en-note") ? xmlString : "<en-note>\(xmlString)</en-note>"
-
-        let options: XMLNode.Options = [.nodePreserveWhitespace]
-        return try XMLDocument(data: wrappedContent.data(using: .utf8)!, options: options)
+        let options: XMLNode.Options = [.nodePreserveWhitespace, .documentTidyXML]
+        do {
+            return try XMLDocument(data: xmlString.data(using: .utf8)!, options: options)
+        } catch {
+            throw error
+        }
     }
 
     private func convertElementToMarkdown(_ element: XMLNode) -> String {

@@ -63,6 +63,19 @@ public extension EvernoteNote {
         return false
     }
 
+    private func countListAncestors(_ element: XMLNode) -> Int {
+        var count = 0
+        var current = element.parent
+        while let parent = current {
+            if let element = parent as? XMLElement,
+               ["ul", "ol"].contains(element.name?.lowercased()) {
+                count += 1
+            }
+            current = parent.parent
+        }
+        return count
+    }
+
     private func convertElementToMarkdown(_ element: XMLNode) -> String {
         guard let element = element as? XMLElement else {
             return element.stringValue ?? ""
@@ -125,18 +138,17 @@ public extension EvernoteNote {
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let href = element.attribute(forName: "href")?.stringValue ?? ""
             return "[\(content.isEmpty ? href : content)](\(href))"
-        case "ul":
-            let items = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return "\n\(items)"
-        case "ol":
-            let items = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return "\n\(items)"
+        case "ul", "ol":
+            let items = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            return items
         case "li":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let indent = String(repeating: "    ", count: max(0, countListAncestors(element) - 1))
+            // Don't trim whitespace for list content, but do trim newlines
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().replacingOccurrences(of: "\n", with: " ") ?? ""
             if element.parent?.name?.lowercased() == "ol" {
-                return "1. \(content)\n"
+                return indent + "1. \(content)\n"
             } else {
-                return "* \(content)\n"
+                return indent + "* \(content)\n"
             }
         case "code":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""

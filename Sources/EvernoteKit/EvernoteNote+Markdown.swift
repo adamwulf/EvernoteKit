@@ -72,12 +72,6 @@ public extension EvernoteNote {
         case "en-note":
             return element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         case "div":
-            // First check for background images
-            if let style = element.attribute(forName: "style")?.stringValue,
-               let imageUrl = extractBackgroundImageUrl(from: style) {
-                return "![background image](\(imageUrl))\n\n"
-            }
-
             // Process children and track if we need paragraph-style spacing
             var result = ""
             var inlineContent = ""
@@ -101,6 +95,13 @@ public extension EvernoteNote {
             // Flush any remaining inline content
             if !inlineContent.isEmpty {
                 result += inlineContent.trimmingCharacters(in: .whitespacesAndNewlines) + "\n\n"
+            }
+
+            // background images, and treat as an img tag if there is no content otherwise
+            if result.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               let style = element.attribute(forName: "style")?.stringValue,
+               let imageUrl = extractBackgroundImageUrl(from: style) {
+                return "![background image](\(imageUrl))\n\n"
             }
 
             return result

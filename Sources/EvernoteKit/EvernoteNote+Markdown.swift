@@ -52,6 +52,17 @@ public extension EvernoteNote {
         }
     }
 
+    private func hasAncestor(element: XMLNode, named: String) -> Bool {
+        var current = element.parent
+        while let parent = current {
+            if let element = parent as? XMLElement, element.name?.lowercased() == named.lowercased() {
+                return true
+            }
+            current = parent.parent
+        }
+        return false
+    }
+
     private func convertElementToMarkdown(_ element: XMLNode) -> String {
         guard let element = element as? XMLElement else {
             return element.stringValue ?? ""
@@ -106,19 +117,16 @@ public extension EvernoteNote {
             }
         case "code":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let parentName = element.parent?.name?.lowercased()
-            if parentName == "p" {
-                return "`\(content)`"
-            }
-            return "```\n\(content)\n```\n\n"
-        case "pre":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
-            let hasCodeParent = element.parent?.name?.lowercased() == "code"
-            if hasCodeParent {
+            let hasPreAncestor = hasAncestor(element: element, named: "pre")
+            if hasPreAncestor {
                 return content
             }
+            return "`\(content)`"
+        case "pre":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let hasCodeParent = hasAncestor(element: element, named: "code")
             let hasCodeChild = element.children?.contains(where: { ($0 as? XMLElement)?.name?.lowercased() == "code" }) ?? false
-            if hasCodeChild {
+            if hasCodeParent || hasCodeChild {
                 return content
             } else {
                 let inlineContent = content.trimmingCharacters(in: .whitespacesAndNewlines)

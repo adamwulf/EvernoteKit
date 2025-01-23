@@ -75,7 +75,7 @@ public extension EvernoteNote {
             // First check for background images
             if let style = element.attribute(forName: "style")?.stringValue,
                let imageUrl = extractBackgroundImageUrl(from: style) {
-                return "\n![background image](\(imageUrl))\n"
+                return "![background image](\(imageUrl))\n\n"
             }
 
             // Process children and track if we need paragraph-style spacing
@@ -100,7 +100,7 @@ public extension EvernoteNote {
 
             // Flush any remaining inline content
             if !inlineContent.isEmpty {
-                result += inlineContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                result += inlineContent.trimmingCharacters(in: .whitespacesAndNewlines) + "\n\n"
             }
 
             return result
@@ -161,8 +161,8 @@ public extension EvernoteNote {
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let lines = content.components(separatedBy: "\n")
             let parentName = element.parent?.name?.lowercased()
-            let extraNewline = parentName != "p" && parentName != "blockquote" ? "\n" : ""
-            return "\n" + lines.map { "> \($0)" }.joined(separator: "\n") + extraNewline
+            let extraNewline = parentName != "p" && parentName != "blockquote" ? "\n\n" : "\n"
+            return lines.map { "> \($0)" }.joined(separator: "\n") + extraNewline
         case "h1":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "# \(content)\n\n"
@@ -181,6 +181,8 @@ public extension EvernoteNote {
         case "h6":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "###### \(content)\n\n"
+        case "hr":
+            return "\n---\n\n"
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }

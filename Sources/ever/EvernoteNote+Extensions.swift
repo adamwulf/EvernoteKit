@@ -13,6 +13,7 @@ public extension EvernoteNote {
         try createDirectoryStructure(baseNoteDir: baseNoteDir)
         try exportLocalizedStrings(baseNoteDir: baseNoteDir)
         try exportJSON(baseNoteDir: baseNoteDir)
+        try exportHTML(baseNoteDir: baseNoteDir)
         try exportMarkdown(baseNoteDir: baseNoteDir)
         try exportResources(baseNoteDir: baseNoteDir)
         try setDirectoryDates(baseNoteDir: baseNoteDir)
@@ -80,6 +81,13 @@ public extension EvernoteNote {
         encoder.outputFormatting = .prettyPrinted
         let jsonData = try encoder.encode(self)
         try jsonData.write(to: URL(fileURLWithPath: (noteDir as NSString).appendingPathComponent("content.json")))
+    }
+
+    private func exportHTML(baseNoteDir: String) throws {
+        let noteDir = (baseNoteDir as NSString).appendingPathComponent("\(id).localized")
+        try content.write(to: URL(fileURLWithPath: (noteDir as NSString).appendingPathComponent("content.html")),
+                         atomically: true,
+                         encoding: .utf8)
     }
 
     private func exportMarkdown(baseNoteDir: String) throws {

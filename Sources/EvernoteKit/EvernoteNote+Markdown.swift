@@ -72,16 +72,38 @@ public extension EvernoteNote {
         case "en-note":
             return element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         case "div":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
-
-            // Handle background images
-            if content.isEmpty,
-               let style = element.attribute(forName: "style")?.stringValue,
+            // First check for background images
+            if let style = element.attribute(forName: "style")?.stringValue,
                let imageUrl = extractBackgroundImageUrl(from: style) {
                 return "\n![background image](\(imageUrl))\n"
             }
 
-            return content
+            // Process children and track if we need paragraph-style spacing
+            var result = ""
+            var inlineContent = ""
+
+            for child in element.children ?? [] {
+                let childContent = convertElementToMarkdown(child)
+                let isBlockElement = childContent.contains("\n\n")
+
+                if isBlockElement {
+                    // Flush any pending inline content with paragraph spacing
+                    if !inlineContent.isEmpty {
+                        result += inlineContent.trimmingCharacters(in: .whitespacesAndNewlines) + "\n\n"
+                        inlineContent = ""
+                    }
+                    result += childContent
+                } else {
+                    inlineContent += childContent
+                }
+            }
+
+            // Flush any remaining inline content
+            if !inlineContent.isEmpty {
+                result += inlineContent.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+
+            return result
         case "p":
             let content = element.children?.map { convertElementToMarkdown($0).replacingOccurrences(of: "\n", with: " ") }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
@@ -117,11 +139,11 @@ public extension EvernoteNote {
             }
         case "code":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let hasPreAncestor = hasAncestor(element: element, named: "pre")
-            if hasPreAncestor {
-                return content
+            let parentName = element.parent?.name?.lowercased()
+            if parentName == "p" {
+                return "`\(content)`"
             }
-            return "`\(content)`"
+            return "```\n\(content)\n```\n\n"
         case "pre":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
             let hasCodeParent = hasAncestor(element: element, named: "code")

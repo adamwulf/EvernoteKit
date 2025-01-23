@@ -6,7 +6,6 @@
 //
 import Foundation
 
-
 public struct ResourceAttributes: Codable {
     public var sourceUrl: String?
     public var timestamp: Date?

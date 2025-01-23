@@ -6,7 +6,6 @@
 //
 import Foundation
 
-
 public struct NoteAttributes: Codable {
     public var subjectDate: Date?
     public var latitude: Double?

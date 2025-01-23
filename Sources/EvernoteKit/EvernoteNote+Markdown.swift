@@ -59,16 +59,22 @@ public extension EvernoteNote {
 
         switch element.name?.lowercased() {
         case "en-note":
-            return element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
-        case "div", "p":
+            return element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        case "div":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
-            let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
-            if trimmedContent.isEmpty,
+
+            // Handle background images
+            if content.isEmpty,
                let style = element.attribute(forName: "style")?.stringValue,
                let imageUrl = extractBackgroundImageUrl(from: style) {
                 return "\n![background image](\(imageUrl))\n"
             }
-            return "\n\(content)\n"
+
+            return content
+        case "p":
+            let content = element.children?.map { convertElementToMarkdown($0).replacingOccurrences(of: "\n", with: " ") }.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+            return "\(content)\n\n"
         case "img":
             let src = element.attribute(forName: "src")?.stringValue ?? ""
             let alt = element.attribute(forName: "alt")?.stringValue ?? ""
@@ -76,30 +82,30 @@ public extension EvernoteNote {
         case "br":
             return "\n"
         case "b", "strong":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "**\(content)**"
         case "i", "em":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "*\(content)*"
         case "a":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let href = element.attribute(forName: "href")?.stringValue ?? ""
             return "[\(content)](\(href))"
         case "ul":
-            let items = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let items = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "\n\(items)"
         case "ol":
-            let items = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let items = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "\n\(items)"
         case "li":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             if element.parent?.name?.lowercased() == "ol" {
                 return "1. \(content)\n"
             } else {
                 return "* \(content)\n"
             }
         case "code", "pre":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return "`\(content)`"
         case "en-todo":
             let checked = element.attribute(forName: "checked")?.stringValue == "true"

@@ -103,12 +103,9 @@ public extension EvernoteNote {
         let noteDir = (baseNoteDir as NSString).appendingPathComponent("\(id).localized")
         let assetsDir = (noteDir as NSString).appendingPathComponent("assets")
 
-        print("Note \(id) has \(resources.count) resources")
-
         // Only create assets directory if we have resources with data
         let resourcesWithData = resources.filter { $0.data != nil }
         guard !resourcesWithData.isEmpty else {
-            print("  - No resources have data")
             return
         }
 
@@ -116,7 +113,6 @@ public extension EvernoteNote {
 
         for (index, resource) in resources.enumerated() {
             guard let data = resource.data else {
-                print("  - Resource \(index) has no data (mime: \(resource.mime), filename: \(resource.attributes?.fileName ?? "unknown"))")
                 continue
             }
 
@@ -128,8 +124,6 @@ public extension EvernoteNote {
                 let ext = mimeTypeToExtension(resource.mime)
                 filename = "attachment_\(index)\(ext)"
             }
-
-            print("  + Writing resource \(index) to \(filename) (\(data.count) bytes)")
 
             let filePath = (assetsDir as NSString).appendingPathComponent(filename)
             try data.write(to: URL(fileURLWithPath: filePath))

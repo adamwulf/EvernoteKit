@@ -112,7 +112,7 @@ public extension EvernoteNote {
             }
             return "```\n\(content)\n```\n\n"
         case "pre":
-            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
             let hasCodeParent = element.parent?.name?.lowercased() == "code"
             if hasCodeParent {
                 return content
@@ -121,7 +121,8 @@ public extension EvernoteNote {
             if hasCodeChild {
                 return content
             } else {
-                return "`\(content)`"
+                let inlineContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
+                return "`\(inlineContent)`"
             }
         case "en-todo":
             let checked = element.attribute(forName: "checked")?.stringValue == "true"

@@ -113,6 +113,10 @@ public extension EvernoteNote {
         case "en-todo":
             let checked = element.attribute(forName: "checked")?.stringValue == "true"
             return checked ? "[x] " : "[ ] "
+        case "blockquote":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let lines = content.components(separatedBy: "\n")
+            return "\n" + lines.map { "> \($0)" }.joined(separator: "\n") + "\n\n"
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }

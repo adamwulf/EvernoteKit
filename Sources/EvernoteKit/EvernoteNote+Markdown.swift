@@ -144,7 +144,11 @@ public extension EvernoteNote {
             if parentName == "p" {
                 return "`\(content)`"
             }
-            return "```\n\(content)\n```\n\n"
+            if content.contains("\n") {
+                return "```\n\(content)\n```\n\n"
+            } else {
+                return "`\(content)`"
+            }
         case "pre":
             let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
             let hasCodeParent = hasAncestor(element: element, named: "code")
@@ -184,6 +188,18 @@ public extension EvernoteNote {
             return "###### \(content)\n\n"
         case "hr":
             return "\n---\n\n"
+        case "table":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            return "\n<table>\n" + content + "</table>\n\n"
+        case "tr":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined() ?? ""
+            return "<tr>" + content + "</tr>\n"
+        case "th":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "<th>" + content + "</th>"
+        case "td":
+            let content = element.children?.map { convertElementToMarkdown($0) }.joined().trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return "<td>" + content + "</td>"
         default:
             return element.children?.map { convertElementToMarkdown($0) }.joined() ?? element.stringValue ?? ""
         }
